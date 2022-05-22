@@ -13,6 +13,7 @@
                  [http-kit "2.5.3"]
                  [compojure "1.6.1"]
                  [hiccup "1.0.5"]
+                 [cljs-ajax "0.8.4"]
                  ]
   :cljsbuild {
     :builds [{:source-paths ["src" "dev"]
