@@ -1,12 +1,8 @@
 (ns patients.main
   (:require [patients.config :as config])
   (:require [org.httpkit.server :refer [run-server]])
+  (:require [patients.app :refer [app]])
   (:gen-class))
-
-(defn app [req]
-  {:status  200
-   :headers {"Content-Type" "text/html"}
-   :body    "hello HTTP!"})
 
 (defn -main [& args]
   (let [port (config/server-port)]
