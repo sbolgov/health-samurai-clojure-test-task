@@ -11,6 +11,7 @@
                  [environ "1.2.0"]
                  [http-kit "2.5.3"]
                  [compojure "1.6.1"]
+                 [hiccup "1.0.5"]
                  ]
   :profiles {:dev {:plugins [[lein-environ "0.4.0"]
                             ]
