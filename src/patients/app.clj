@@ -9,6 +9,7 @@
 (defroutes app-routes
   (GET "/" req handle-index)
   (GET "/edit/:id" [id] (handle-edit id))
+  (POST "/" req handle-create)
   (route/not-found "Not Found"))
 
 (def app (ring-params/wrap-params app-routes))

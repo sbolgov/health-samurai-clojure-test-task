@@ -2,7 +2,7 @@
   (:require [patients.db :as db]
             [patients.render :refer :all]
             [hiccup.core :as hiccup]
-            [clojure.string :refer [blank?, lower-case, split]]
+            [clojure.string :refer [blank?, join, lower-case, split]]
 ))
 
 (defn parse-uuid [s]
@@ -12,6 +12,12 @@
         (java.util.UUID/fromString s)
       (catch IllegalArgumentException e
         nil))))
+
+(defn redirect-to-home [ & tops]
+  (let [url (if (empty? tops)
+                "/"
+                (str "/?top=" (join "," tops)))]
+  {:status 303 :headers {"Location" url}}))
 
 (defn handle-index [req]
   (let [param-top (get (:params req) "top" "")
@@ -36,3 +42,12 @@
               (if (empty? data)
                   {:status 404}
                   (hiccup/html (render-edit id data))))))))
+
+(defn handle-create [req]
+  (let [params (:params req)
+        data (into {} (map (fn [k] [k (get params (name k))]) db/valid-keys))]
+  (try
+    (let [uuid (db/create data)]
+      (redirect-to-home uuid))
+  (catch IllegalArgumentException e
+    {:status 400 :body (.getMessage e)}))))
