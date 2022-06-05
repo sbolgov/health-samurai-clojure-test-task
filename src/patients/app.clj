@@ -10,6 +10,7 @@
   (GET "/" req handle-index)
   (GET "/edit/:id" [id] (handle-edit id))
   (POST "/" req handle-create)
+  (POST "/update/:id" req handle-update)
   (POST "/delete/:id" req handle-delete)
   (route/not-found "Not Found"))
 

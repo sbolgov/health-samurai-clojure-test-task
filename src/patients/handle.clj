@@ -52,6 +52,17 @@
   (catch IllegalArgumentException e
     {:status 400 :body (.getMessage e)}))))
 
+(defn handle-update [req]
+  (let [param-id (get (:route-params req) :id)
+        uuid (parse-uuid param-id)]
+    (if (nil? uuid)
+        {:status 400}
+        (let [data (into {} (map (fn [[k v]] {(keyword k) v}) (:form-params req)))
+              updated-uuid (db/update uuid data)]
+          (if (nil? updated-uuid)
+              {:status 404}
+              (redirect-to-home uuid))))))
+
 (defn handle-delete [req]
   (let [param-id (get (:route-params req) :id)
         uuid (parse-uuid param-id)]
