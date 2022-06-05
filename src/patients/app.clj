@@ -10,6 +10,7 @@
   (GET "/" req handle-index)
   (GET "/edit/:id" [id] (handle-edit id))
   (POST "/" req handle-create)
+  (POST "/delete/:id" req handle-delete)
   (route/not-found "Not Found"))
 
 (def app (ring-params/wrap-params app-routes))

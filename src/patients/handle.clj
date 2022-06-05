@@ -51,3 +51,13 @@
       (redirect-to-home uuid))
   (catch IllegalArgumentException e
     {:status 400 :body (.getMessage e)}))))
+
+(defn handle-delete [req]
+  (let [param-id (get (:route-params req) :id)
+        uuid (parse-uuid param-id)]
+    (if (nil? uuid)
+        {:status 400}
+        (let [deleted-uuid (db/delete uuid)]
+          (if (nil? deleted-uuid)
+              {:status 404}
+              (redirect-to-home))))))
