@@ -12,6 +12,7 @@
   (POST "/" req handle-create)
   (POST "/update/:id" req handle-update)
   (POST "/delete/:id" req handle-delete)
+  (route/resources "/")
   (route/not-found "Not Found"))
 
 (def app (ring-params/wrap-params app-routes))
