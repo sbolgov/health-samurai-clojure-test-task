@@ -72,3 +72,9 @@
           (if (nil? deleted-uuid)
               {:status 404}
               (redirect-to-home))))))
+
+(defn handle-search [req]
+  (let [part (get (:params req) "q" "")
+        patients (db/search part 10)
+       ]
+    (hiccup/html (render-patients-table patients))))

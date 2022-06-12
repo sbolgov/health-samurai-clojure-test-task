@@ -12,6 +12,7 @@
   (POST "/" req handle-create)
   (POST "/update/:id" req handle-update)
   (POST "/delete/:id" req handle-delete)
+  (GET "/search" req handle-search)
   (route/resources "/")
   (route/not-found "Not Found"))
 
