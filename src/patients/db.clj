@@ -1,7 +1,7 @@
 (ns patients.db
   (:require [patients.config :as config])
   (:require [clojure.set :as set])
-  (:require [clojure.string :refer [join]])
+  (:require [clojure.string :refer [blank?, join]])
   (:require [next.jdbc :as jdbc])
   (:require [next.jdbc.result-set :as rs]))
 
@@ -34,15 +34,29 @@
 
 (def searchable-fields (map name (disj valid-keys :gender)))
 
-(defn verify-keys [ks]
-  (let [diff (set/difference (set ks) valid-keys)]
-    (if (empty? diff)
-       ks
-       (throw (IllegalArgumentException. (str "Unexpected keys: " (join "," diff)))))))
+(defn verify [data]
+  (do
+    ; Check keys.
+    (let [ks (keys data)
+          diff (set/difference (set ks) valid-keys)]
+      (if (empty? diff)
+         true
+         (throw (IllegalArgumentException. (str "Unexpected keys: " (join "," diff))))))
+    ; Check mandatory values.
+    (doall (for [k [:first_name :last_name :gender :address1 :city :state :zip :country :policy]
+                 :let [v (data k)]
+                 :when (blank? v)]
+             (throw (IllegalArgumentException. (str "Field " (name k) " cannot be blank")))))
+    ; Check gender.
+    (case (:gender data)
+      ("F" "M") true
+      (throw (IllegalArgumentException. (str "Unexpected gender: " (:gender data)))))
+    ; Everything looks good.
+    data))
 
 (defn create [data]
   (let [opts {:return-keys true :builder-fn rs/as-unqualified-lower-maps}
-        fields (map name (verify-keys (keys data)))
+        fields (map name (keys (verify data)))
         n (count fields)
         sql (str "insert into patients ("
                    (join ", " fields)
@@ -55,7 +69,7 @@
         (:patient_id))))
 
 (defn update [id data]
-  (let [fields (map name (verify-keys (keys data)))
+  (let [fields (map name (keys (verify data)))
         sql (str "update patients set "
                    (join ", " (map #(str % "=?") fields))
                    " where patient_id=?")
