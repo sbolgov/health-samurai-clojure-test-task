@@ -1,4 +1,5 @@
 (ns patients.main
+  (:require [patients.config :as config])
   (:require [org.httpkit.server :refer [run-server]])
   (:gen-class))
 
@@ -8,5 +9,6 @@
    :body    "hello HTTP!"})
 
 (defn -main [& args]
-  (run-server app {:port 8080})
-  (println "Started server on localhost:8080"))
+  (let [port (config/server-port)]
+    (run-server app {:port port})
+    (println (str "Started server on localhost:" port))))
