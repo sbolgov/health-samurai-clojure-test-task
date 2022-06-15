@@ -13,4 +13,12 @@
                    :source-paths ["dev"]
                    :env {:db-url "jdbc:postgresql://localhost/patients_db?user=healthsamuraitest"
                         }
-                  }})
+                  }
+             :test {:plugins [[lein-environ "0.4.0"]]
+                    :dependencies [[com.opentable.components/otj-pg-embedded "0.7.1"]
+                                  ]
+                    :source-paths ["dev"]
+                    :env {:pg-embedded-port 59432
+                          :db-url "jdbc:postgresql://localhost:59432/postgres?user=postgres"
+                         }
+                   }})
