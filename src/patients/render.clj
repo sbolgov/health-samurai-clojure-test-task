@@ -36,6 +36,9 @@
       ]
       [:hr]
       [:div {:id "patients-list"} (render-patients-table patients)]
+      [:script {:src "out/goog/base.js"}]
+      [:script {:src "app.js"}]
+      [:script "goog.require(\"patients.client\");"]
     ]])
 
 (def labels {
