@@ -9,8 +9,20 @@
 (defn render-patient-row [data]
   (let [link (str "/edit/" (:patient_id data))
         name (join-non-blanks " " (:first_name data) (:middle_name data) (:last_name data))
+        address (join-non-blanks " "
+                  (join-non-blanks ", " (:address1 data) (:address2 data) (:city data) (:state data))
+                  (:zip data)
+                  (:country data))
        ]
-    [:a {:href link} name]))
+    [:tr
+      [:td (:policy data)]
+      [:td [:a {:href link} name]]
+      [:td address]
+    ]))
+
+(defn render-patients-table [patients]
+  (into [:table {:id "patients-table"}]
+        (map render-patient-row patients)))
 
 (defn render-index [patients]
   [:html
@@ -23,8 +35,7 @@
         [:input {:type "text" :id "search" :name "search" :autofocus true}]
       ]
       [:hr]
-      (into [:div {:id "patients-list"}]
-            (interpose [:br] (map render-patient-row patients)))
+      [:div {:id "patients-list"} (render-patients-table patients)]
     ]])
 
 (def labels {
