@@ -1,7 +1,18 @@
 (ns patients.render
-  )
+  (:require [patients.db :as db]
+            [clojure.string :refer [blank?, join]]
+))
 
-(defn render-index [req]
+(defn join-non-blanks [sep & values]
+  (join sep (remove blank? values)))
+
+(defn render-patient-row [data]
+  (let [link (str "/edit/" (:patient_id data))
+        name (join-non-blanks " " (:first_name data) (:middle_name data) (:last_name data))
+       ]
+    [:a {:href link} name]))
+
+(defn render-index [patients]
   [:html
     [:body
       [:h1 {:class "title"} "Patients"]
@@ -11,7 +22,9 @@
         [:span {:style "margin: 10px;"} "or Search"]
         [:input {:type "text" :id "search" :name "search" :autofocus true}]
       ]
-      [:div {:id "patients-list"}]
+      [:hr]
+      (into [:div {:id "patients-list"}]
+            (interpose [:br] (map render-patient-row patients)))
     ]])
 
 (def labels {

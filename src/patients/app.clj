@@ -7,7 +7,7 @@
 ))
 
 (defroutes app-routes
-  (GET "/" [] render-index)
+  (GET "/" req handle-index)
   (GET "/edit/:id" [id] (handle-edit id))
   (route/not-found "Not Found"))
 
