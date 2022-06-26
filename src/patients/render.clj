@@ -1,31 +1,65 @@
 (ns patients.render
   (:require [patients.db :as db]
-            [clojure.string :refer [blank?, join]]
-))
+            [clojure.string :refer [blank?]]
+)
+  (:import (java.util.regex Pattern)))
 
-(defn join-non-blanks [sep & values]
-  (join sep (remove blank? values)))
+(defn highlight-matches [m s n]
+  (lazy-seq
+    (if (.find m)
+      (let [start (.start m)
+            end (.end m)
+            non-highlighted (if (= start n) nil (subs s n start))
+            highlighted (subs s start end)
+            rest (highlight-matches m s end)
+            r (cons [:span {:class "highlight" } highlighted] rest)]
+          (if (nil? non-highlighted) r (cons non-highlighted r)))
+      (let [t (subs s n)]
+        (if (empty? t)
+          nil
+          (list t))))))
 
-(defn render-patient-row [data]
+(defn text-with-highlights [re-pattern text]
+  (cond
+    (empty? text) nil
+    (nil? re-pattern) (list text)
+    :else (highlight-matches (.matcher re-pattern text) text 0)))
+
+(defn join-texts-with-highlights [sep texts]
+  (->> texts
+       (remove empty?)
+       (interpose (list sep))
+       (apply concat)))
+
+(defn render-patient-row [re-pattern data]
   (let [link (str "/edit/" (:patient_id data))
-        name (join-non-blanks " " (:first_name data) (:middle_name data) (:last_name data))
-        address (join-non-blanks " "
-                  (join-non-blanks ", " (:address1 data) (:address2 data) (:city data) (:state data))
-                  (:zip data)
-                  (:country data))
+        render #(text-with-highlights re-pattern (data %))
+        name (join-texts-with-highlights " " (map render [:first_name :middle_name :last_name]))
+        address (join-texts-with-highlights " "
+                  [(join-texts-with-highlights ", " (map render [:address1 :address2 :city :state]))
+                   (render :zip)
+                   (render :country)])
        ]
     [:tr
-      [:td (:policy data)]
-      [:td [:a {:href link} name]]
-      [:td address]
+      (into [:td] (render :policy))
+      [:td (into [:a {:href link}] name)]
+      (into [:td] address)
     ]))
 
-(defn render-patients-table [patients]
-  (into [:table {:id "patients-table"}]
-        (map render-patient-row patients)))
+(defn build-highlight-re [highlight-str]
+  (Pattern/compile highlight-str (+ Pattern/LITERAL Pattern/CASE_INSENSITIVE)))
+
+(defn render-patients-table [patients highlight-str]
+  (let [re-pattern (if (blank? highlight-str)
+                       nil
+                       (build-highlight-re highlight-str))]
+    (into [:table {:id "patients-table"}]
+          (map #(render-patient-row re-pattern %) patients))))
 
 (defn render-index [patients]
   [:html
+    [:head [:title "Patients"]
+           [:style ".highlight { background-color:#FFFF00;}"]]
     [:body
       [:h1 {:class "title"} "Patients"]
       [:form {:action "/edit/new" :method "get" :id "create" :name "create" :style "display: inline;"}
@@ -35,7 +69,7 @@
         [:input {:type "text" :id "search" :name "search" :autofocus true}]
       ]
       [:hr]
-      [:div {:id "patients-list"} (render-patients-table patients)]
+      [:div {:id "patients-list"} (render-patients-table patients nil)]
       [:script {:src "out/goog/base.js"}]
       [:script {:src "app.js"}]
       [:script "goog.require(\"patients.client\");"]

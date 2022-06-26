@@ -77,4 +77,4 @@
   (let [part (get (:params req) "q" "")
         patients (db/search part 10)
        ]
-    (hiccup/html (render-patients-table patients))))
+    (hiccup/html (render-patients-table patients part))))

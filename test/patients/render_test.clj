@@ -143,3 +143,13 @@
       (is (map? attrs))
       (is (= "/" (:action attrs)))
       (is (= empty-data (reduce collect-values-from-inputs {} rest))))))
+
+(deftest text-with-highlights-checks
+  (testing "rendering texts with highlights performs case-insensitive matching and treats any metacharactes as literal characters"
+    (let [text "To be or not to be?..."
+          re-pattern (render/build-highlight-re "E?.")
+          rendered (render/text-with-highlights re-pattern text)]
+      ; Only one highlighted span will be rendered if both case-sensitive matching and literal parsing are enabled.
+      ; With case-sensitive matching no highlights will be rendered.
+      ; Without enabling literal parsing every single character will become highlighted.
+      (is (= '("To be or not to b" [:span {:class "highlight"} "e?."] "..") rendered)))))
